@@ -1,0 +1,48 @@
+apply plugin: 'maven-publish'
+apply plugin: 'com.jfrog.bintray'
+
+apply from: project.rootProject.file('gradle/maven-central.gradle')
+
+task stubJavadoc(type: Jar) {
+    archiveClassifier = 'javadoc'
+}
+
+
+publishing {
+    publications.all {
+        pom.withXml(configureMavenCentralMetadata)
+    }
+}
+
+
+bintray {
+    user = BINTRAY_USER
+    key = BINTRAY_KEY
+    override = true // for multi-platform Kotlin/Native publishing
+    configurations = ['archives']
+    pkg {
+        repo = bintrayRepo
+        name = bintrayName
+        userOrg = bringrayOrg
+        desc = libraryDescription
+        websiteUrl = siteUrl
+        vcsUrl = gitUrl
+        licenses = allLicenses
+        dryRun = false
+        override = true
+        publicDownloadNumbers = true
+        version {
+            desc = libraryDescription
+        }
+    }
+}
+// TODO :kludge this is required for K/N publishing
+bintrayUpload.dependsOn publishToMavenLocal
+
+// This is for easier debugging of bintray uploading problems
+bintrayUpload.doFirst {
+    publications = project.publishing.publications.findAll { !it.name.contains('-test') }.collect {
+        println("Uploading artifact '$it.groupId:$it.artifactId:$it.version' from publication '$it.name'")
+        it.name
+    }
+}

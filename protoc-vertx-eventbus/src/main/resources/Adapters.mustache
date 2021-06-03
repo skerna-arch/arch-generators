@@ -1,0 +1,50 @@
+package io.skerna.arch.protoservices
+
+
+import kotlin.coroutines.*
+import kotlinx.coroutines.*
+import kotlinx.coroutines.channels.*
+import io.vertx.core.eventbus.DeliveryOptions
+import io.vertx.core.eventbus.EventBus
+import kotlin.coroutines.CoroutineContext
+import io.vertx.core.eventbus.Message
+import kotlinx.coroutines.launch
+import io.vertx.core.AsyncResult
+import io.vertx.core.Handler
+
+
+suspend fun <T> EventBus.requestSuspend(address:String, message:Any, deliveryOptions: DeliveryOptions?=null): Message<T> = suspendCoroutine { scope ->
+
+    if(deliveryOptions==null){
+         request<T>(address,message){asyncResult->
+            if(asyncResult.failed()){
+                scope.resumeWithException(asyncResult.cause())
+                return@request
+            }
+                if(!asyncResult.succeeded()){
+            }
+            val messageRepply = asyncResult.result()
+            if(messageRepply.body() == null){
+                scope.resumeWithException(IllegalStateException("sin resultados"))
+                return@request
+            }
+            scope.resume(messageRepply)
+        }
+    }else{
+        request<T>(address,message,deliveryOptions){asyncResult->
+            if(asyncResult.failed()){
+                scope.resumeWithException(asyncResult.cause())
+                return@request
+            }
+            if(!asyncResult.succeeded()){
+                println("UE MDA")
+            }
+            val messageRepply = asyncResult.result()
+                if(messageRepply.body() == null){
+                scope.resumeWithException(IllegalStateException("sin resultados"))
+                return@request
+            }
+            scope.resume(messageRepply)
+        }
+    }
+}

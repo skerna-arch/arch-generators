@@ -1,0 +1,36 @@
+
+plugins {
+  id "com.jfrog.bintray"apply false
+}
+subprojects {
+
+
+  repositories {
+    mavenLocal()
+    jcenter()
+    maven { url "https://dl.bintray.com/skerna/maven/" }
+  }
+
+  dependencies {
+  }
+
+
+  configurations.all {
+  }
+
+
+  tasks.withType(JavaCompile) {
+    options.encoding = 'UTF-8'
+  }
+  apply from: rootProject.file("gradle/configuration.gradle")
+}
+
+["assemble", "build", "clean", "publishToMavenLocal"].forEach { taskName ->
+  tasks.create(taskName) { newTask ->
+    subprojects.forEach { subproject ->
+      newTask.dependsOn(":$subproject.name:$taskName")
+    }
+  }
+}
+
+

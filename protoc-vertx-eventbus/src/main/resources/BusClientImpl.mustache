@@ -1,0 +1,45 @@
+{{#packageName}}
+package {{packageName}}
+{{/packageName}}
+
+import io.vertx.core.Vertx
+import io.vertx.core.eventbus.DeliveryOptions
+import io.vertx.core.eventbus.EventBus
+import kotlin.coroutines.CoroutineContext
+import kotlin.coroutines.*
+import kotlinx.coroutines.*
+import kotlinx.coroutines.channels.*
+import io.skerna.arch.protoservices.requestSuspend
+import io.vertx.core.eventbus.Message
+
+{{#javaDoc}}{{{javaDoc}}}{{/javaDoc}}
+{{#deprecated}}@Deprecated("deprecated"){{/deprecated}}
+@javax.annotation.Generated(
+        value = ["by gRPC Kotlin generator"],
+        comments = "Source: {{protoName}}"
+)
+open class {{serviceName}}BusCliImpl(
+vertx:Vertx,
+coroutineContext: CoroutineContext = Dispatchers.Default
+):{{serviceName}}BusCli,CoroutineScope{
+    protected val eventBus = vertx.eventBus()
+    private val _coroutineContext: CoroutineContext = coroutineContext
+
+    override val coroutineContext: CoroutineContext
+    get() = _coroutineContext
+
+    {{#methods}}
+    {{#javaDoc}}{{{javaDoc}}}{{/javaDoc}}
+    {{#deprecated}}@Deprecated("deprecated"){{/deprecated}}
+    {{^isManyInput}}
+    {{^isManyOutput}}
+    {{! == unary req, unary resp == }}
+    override suspend fun {{methodName}}(request: {{inputType}}, options:DeliveryOptions?):Message<{{outputType}}> {
+        val result = eventBus.requestSuspend<{{outputType}}>("{{packageName}}.{{serviceName}}.{{methodName}}",request,options)
+        return result
+    }
+    {{/isManyOutput}}
+    {{/isManyInput}}
+    {{/methods}}
+
+}

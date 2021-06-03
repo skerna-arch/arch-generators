@@ -1,0 +1,28 @@
+tasks.withType(GenerateModuleMetadata) {
+  enabled = false
+}
+
+task wrapperUpdate(type: Wrapper) {
+  gradleVersion = gradleVersion //version required
+}
+
+def resolveUserBintray(){
+  if(!project.hasProperty('BINTRAY_USER')){
+    return ''
+  }else{
+    return BINTRAY_USER
+  }
+}
+
+def resolveKeyBintray(){
+  if(!project.hasProperty('BINTRAY_KEY')){
+    return ''
+  }else{
+    return BINTRAY_KEY
+  }
+}
+
+ext{
+  BINTRAY_USER = resolveUserBintray()
+  BINTRAY_KEY = resolveKeyBintray()
+}

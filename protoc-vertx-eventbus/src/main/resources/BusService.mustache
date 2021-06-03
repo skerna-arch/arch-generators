@@ -1,0 +1,81 @@
+{{#packageName}}
+package {{packageName}}
+{{/packageName}}
+
+import io.vertx.core.Vertx
+import io.vertx.core.eventbus.EventBus
+import kotlin.coroutines.CoroutineContext
+import kotlin.coroutines.*
+import kotlinx.coroutines.*
+import kotlinx.coroutines.channels.*
+import io.vertx.core.eventbus.DeliveryOptions
+import io.vertx.core.eventbus.Message
+import io.vertx.core.MultiMap;
+import io.skerna.arch.eventbus.AbstractProtoEventBus
+import io.skerna.arch.eventbus.EventBusExceptionHandler
+
+{{#javaDoc}}{{{javaDoc}}}{{/javaDoc}}
+{{#deprecated}}@Deprecated("deprecated"){{/deprecated}}
+@javax.annotation.Generated(
+        value = ["by gRPC Kotlin generator"],
+        comments = "Source: {{protoName}}"
+)
+abstract class {{serviceName}}BusService(
+    vertx:Vertx,
+    coroutineContext: CoroutineContext = Dispatchers.Default
+):AbstractProtoEventBus(),CoroutineScope{
+    protected val eventBus = vertx.eventBus()
+    private val _coroutineContext: CoroutineContext = coroutineContext
+
+    override val coroutineContext: CoroutineContext
+    get() = _coroutineContext
+
+
+
+    override fun autoBindService(){
+      this.bindService(null)
+    }
+
+    override fun bindService(eventBusExceptionHandler:EventBusExceptionHandler?) {
+        {{#methods}}
+        {{^isManyInput}}
+        {{^isManyOutput}}
+        eventBus.consumer<{{inputType}}>("{{packageName}}.{{serviceName}}.{{methodName}}") { message ->
+            val headers = message.headers()
+            val body = message.body()
+            executeAndResponse(message,coroutineContext, suspend { {{methodName}}(body,headers) },eventBusExceptionHandler)
+        }
+        {{/isManyOutput}}
+        {{/isManyInput}}
+        {{/methods}}
+    }
+    {{#methods}}
+    {{^isManyInput}}
+    {{^isManyOutput}}
+    open suspend fun {{methodName}}(request: {{inputType}}, headers:MultiMap): {{outputType}} {
+        throw NotImplementedError("{{methodNamePascalCase}}")
+    }
+    {{/isManyOutput}}
+    {{/isManyInput}}
+    {{/methods}}
+
+    open fun<T,R> executeAndResponse(message:Message<T>,context: CoroutineContext, result:suspend ()->R,exceptionHandler:EventBusExceptionHandler?=null){
+        launch(context) {
+            try {
+                val operationResult = result.invoke()
+                val headers = message.headers()
+                val options = DeliveryOptions().setHeaders(headers)
+                message.reply(operationResult,options)
+            }catch (ex:Exception){
+                if(exceptionHandler == null){
+                  ex.printStackTrace()
+                  message.fail(1,ex.message)
+                }else{
+                  exceptionHandler.onError(ex,message)
+                }
+
+            }
+        }
+    }
+
+}

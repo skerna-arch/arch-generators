@@ -1,0 +1,51 @@
+plugins {
+  id "com.google.protobuf" version "0.8.16"
+  id 'org.jetbrains.kotlin.jvm'
+}
+
+sourceSets.main.kotlin.srcDirs += 'build/generated/source/proto/main/java'
+sourceSets.main.kotlin.srcDirs += 'build/generated/source/proto/main/eventbus'
+
+protobuf {
+  protoc {
+    artifact = "com.google.protobuf:protoc:3.11.4"
+  }
+  plugins {
+    eventbus {
+      artifact = "io.skerna.arch:protoc-vertx-eventbus:0.1.4:jdk8-linux@exe"
+    }
+    grpc {
+      artifact = "io.grpc:protoc-gen-grpc-java:1.27.2"
+    }
+  }
+  generateProtoTasks {
+    all().each { task ->
+      task.generateDescriptorSet = true
+      task.descriptorSetOptions.includeSourceInfo = true
+      task.descriptorSetOptions.includeImports = true
+      task.descriptorSetOptions.path = "${buildDir}/resources/main/META-INF/proto/app-types.desc"
+    }
+    ofSourceSet("main").forEach {
+      it.plugins {
+        eventbus
+      }
+    }
+    ofSourceSet("main").forEach {
+      it.plugins {
+        grpc
+      }
+    }
+  }
+}
+
+dependencies {
+  implementation "io.vertx:vertx-core:$verxVersion"
+  implementation "io.vertx:vertx-lang-kotlin-coroutines:$verxVersion"
+  implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm:1.5.0'
+
+  implementation project(":grpc-eventbus")
+  implementation "com.google.protobuf:protobuf-java:3.8.0"
+  implementation "io.grpc:grpc-protobuf:1.38.0"
+  implementation "io.grpc:grpc-stub:1.38.0"
+  implementation 'javax.annotation:javax.annotation-api:1.3.2'
+}

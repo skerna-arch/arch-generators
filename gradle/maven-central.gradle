@@ -1,0 +1,58 @@
+/*
+ * Gradle shareable properties publication
+ */
+ext {
+    organizationName = "SKERNA"
+    bringrayOrg = "skerna"
+    bintrayRepo = 'maven'
+    bintrayName = project.name
+    publishedGroupId = project.group
+    libraryName =  project.name
+    artifact = project.name
+    libraryDescription = 'This library provide code generator protos using vertx.'
+
+    siteUrl = 'https://gitlab.com/skerna/reactor/'
+    gitUrl = 'https://gitlab.com/skerna/reactor/'
+
+
+    developerId = 'ronfravi'
+    developerName = 'Ronald Cárdenas'
+    developerEmail = 'rfcardenas92@gmail.com'
+
+    licenseName = 'The Apache Software License, Version 2.0'
+    licenseUrl = 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+    allLicenses = ["Apache-2.0"]
+}
+
+def pomConfig = {
+    licenses {
+        license {
+            name licenseName
+            url licenseUrl
+            distribution "repo"
+        }
+    }
+    developers {
+        developer {
+            id "Skerna"
+            name "$organizationName TEAM"
+            organization organizationName
+            organizationUrl "https://skerna.gitlab.io/homepage/"
+        }
+    }
+    scm {
+        url gitUrl
+    }
+
+}
+// ------- metadata for Maven Central
+
+project.ext.configureMavenCentralMetadata = {
+    def root = it.asNode()
+    // NOTE: Don't try to move top-level things (especially "description") to the pomConfig block
+    //       because they would resolve incorrectly to top-level project properties in Gradle/Groovy
+    root.appendNode('name', project.name)
+    root.appendNode('description', libraryDescription)
+    root.appendNode('url', gitUrl)
+    root.children().last() + pomConfig
+}

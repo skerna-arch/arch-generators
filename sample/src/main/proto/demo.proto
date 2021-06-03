@@ -1,0 +1,26 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_outer_classname = "ProjectApiProto";
+option java_package = "com.skerna.project.v1";
+
+package skerna.hello.v1;
+
+service HelloApi {
+  //HelloWorld RPC service
+  rpc HelloWorld (HelloRequest) returns (HelloResponse) {
+  }
+
+  //HelloWorld RPC service
+  rpc HelloWorld2 (HelloRequest) returns (HelloResponse) {
+  }
+
+}
+//HelloRequest proto request
+message HelloRequest {
+  string name = 1;
+}
+//HelloRequest proto response
+message HelloResponse {
+  string result = 1;
+}

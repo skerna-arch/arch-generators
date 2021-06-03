@@ -1,0 +1,46 @@
+{{#packageName}}
+package {{packageName}}
+{{/packageName}}
+
+import io.skerna.arch.protoservices.*
+import kotlin.coroutines.*
+import kotlinx.coroutines.*
+import kotlinx.coroutines.channels.*
+import io.vertx.core.buffer.Buffer
+import io.vertx.core.eventbus.MessageCodec as EventbusMessageCodec
+
+{{#messages}}
+{{#javaDoc}}{{{javaDoc}}}{{/javaDoc}}
+{{#deprecated}}@Deprecated("deprecated"){{/deprecated}}
+object  {{name}}Codec : EventbusMessageCodec<{{name}}, {{name}}> {
+    override fun decodeFromWire(pos: Int, buffer: Buffer): {{name}} {
+        var _pos = pos
+        var length = buffer.getInt(_pos)
+
+        val startPosition = _pos+4;
+        val endPosition = buffer.length()
+
+        val messageBytes = buffer.getBytes(startPosition,endPosition)
+        return {{name}}.parseFrom(messageBytes)
+    }
+
+    override fun systemCodecID(): Byte {
+        return -1;
+    }
+
+    override fun encodeToWire(buffer: Buffer, s: {{name}}) {
+
+        val bytes = s.toByteArray()
+        buffer.appendInt(bytes.size)
+        buffer.appendBytes(bytes)
+    }
+
+    override fun transform(s: {{name}}): {{name}} {
+        return s
+    }
+
+    override fun name(): String {
+        return "{{serviceName}}"+this::class.simpleName!!;
+    }
+}
+{{/messages}}
